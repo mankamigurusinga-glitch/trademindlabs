@@ -109,8 +109,8 @@ export function StatCards() {
             <p className="truncate text-[0.7rem] font-medium tracking-[0.16em] text-muted-foreground uppercase">
               {s.label}
             </p>
-            <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto] items-end gap-2">
-              <p className="truncate font-display text-2xl font-semibold tabular-nums sm:text-[1.75rem]">
+            <div className="mt-3 flex flex-wrap items-end gap-x-2 gap-y-1">
+              <p className="font-display text-2xl font-semibold tabular-nums">
                 {s.value}
               </p>
               <Delta value={s.change} positive={s.positive} />
