@@ -191,10 +191,10 @@ export function Comparison() {
           <span className="text-xs tracking-[0.16em] text-muted-foreground uppercase">
             Capability
           </span>
-          <span className="flex w-24 shrink-0 items-center justify-center gap-1.5 text-center text-xs font-semibold text-primary sm:w-32">
+          <span className="flex w-14 shrink-0 flex-col items-center justify-center gap-1 text-center text-[0.7rem] font-semibold text-primary sm:w-32 sm:flex-row sm:gap-1.5 sm:text-xs">
             <Activity className="h-3.5 w-3.5" /> TradeMind
           </span>
-          <span className="w-24 shrink-0 text-center text-xs text-muted-foreground sm:w-32">
+          <span className="w-14 shrink-0 text-center text-[0.7rem] text-muted-foreground sm:w-32 sm:text-xs">
             Signal groups
           </span>
         </div>
@@ -205,10 +205,10 @@ export function Comparison() {
               className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-4 border-b border-border/60 px-6 py-5 transition-colors last:border-0 hover:bg-secondary/20 sm:px-9"
             >
               <span className="text-sm text-foreground/90">{r.label}</span>
-              <span className="flex w-24 justify-center sm:w-32">
+              <span className="flex w-14 justify-center sm:w-32">
                 <Cell state={r.tm} />
               </span>
-              <span className="flex w-24 justify-center sm:w-32">
+              <span className="flex w-14 justify-center sm:w-32">
                 <Cell state={r.sig as boolean | "partial"} />
               </span>
             </li>
