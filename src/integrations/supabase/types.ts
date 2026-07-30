@@ -14,7 +14,204 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      alerts: {
+        Row: {
+          alert_type: string
+          created_at: string
+          exchange: string
+          id: string
+          is_read: boolean
+          message: string | null
+          score: number | null
+          severity: string
+          status: string
+          symbol: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          alert_type?: string
+          created_at?: string
+          exchange?: string
+          id?: string
+          is_read?: boolean
+          message?: string | null
+          score?: number | null
+          severity?: string
+          status?: string
+          symbol: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string
+          exchange?: string
+          id?: string
+          is_read?: boolean
+          message?: string | null
+          score?: number | null
+          severity?: string
+          status?: string
+          symbol?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      journal_entries: {
+        Row: {
+          closed_at: string | null
+          created_at: string
+          entry_price: number
+          exchange: string
+          exit_price: number | null
+          id: string
+          leverage: number
+          notes: string | null
+          opened_at: string
+          pnl: number | null
+          position_size: number
+          side: string
+          status: string
+          symbol: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          closed_at?: string | null
+          created_at?: string
+          entry_price?: number
+          exchange?: string
+          exit_price?: number | null
+          id?: string
+          leverage?: number
+          notes?: string | null
+          opened_at?: string
+          pnl?: number | null
+          position_size?: number
+          side?: string
+          status?: string
+          symbol: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          closed_at?: string | null
+          created_at?: string
+          entry_price?: number
+          exchange?: string
+          exit_price?: number | null
+          id?: string
+          leverage?: number
+          notes?: string | null
+          opened_at?: string
+          pnl?: number | null
+          position_size?: number
+          side?: string
+          status?: string
+          symbol?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          telegram_username: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          telegram_username?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          telegram_username?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_settings: {
+        Row: {
+          created_at: string
+          default_exchange: string
+          email_notifications: boolean
+          min_alert_score: number
+          push_notifications: boolean
+          telegram_notifications: boolean
+          theme: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          default_exchange?: string
+          email_notifications?: boolean
+          min_alert_score?: number
+          push_notifications?: boolean
+          telegram_notifications?: boolean
+          theme?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          default_exchange?: string
+          email_notifications?: boolean
+          min_alert_score?: number
+          push_notifications?: boolean
+          telegram_notifications?: boolean
+          theme?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      watchlists: {
+        Row: {
+          created_at: string
+          exchange: string
+          id: string
+          is_favorite: boolean
+          symbol: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          exchange?: string
+          id?: string
+          is_favorite?: boolean
+          symbol: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          exchange?: string
+          id?: string
+          is_favorite?: boolean
+          symbol?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
