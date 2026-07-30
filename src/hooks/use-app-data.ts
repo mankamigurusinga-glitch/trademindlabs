@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import type { TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 import type { JournalEntryInsert, JournalEntryUpdate } from "@/types";
 
 /* --------------------------------- profile -------------------------------- */
@@ -26,7 +27,7 @@ export function useUpdateProfile() {
   const { user } = useAuth();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (patch: Record<string, unknown>) => {
+    mutationFn: async (patch: TablesUpdate<"profiles">) => {
       const { error } = await supabase
         .from("profiles")
         .upsert({ id: user!.id, email: user!.email, ...patch })
@@ -60,7 +61,7 @@ export function useUpdateSettings() {
   const { user } = useAuth();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (patch: Record<string, unknown>) => {
+    mutationFn: async (patch: Omit<TablesUpdate<"user_settings">, "user_id">) => {
       const { error } = await supabase
         .from("user_settings")
         .upsert({ user_id: user!.id, ...patch });
@@ -149,17 +150,17 @@ export function useAlertMutations() {
   const invalidate = () => qc.invalidateQueries({ queryKey: ["alerts"] });
 
   const create = useMutation({
-    mutationFn: async (input: Record<string, unknown>) => {
+    mutationFn: async (input: Omit<TablesInsert<"alerts">, "user_id">) => {
       const { error } = await supabase
         .from("alerts")
-        .insert({ ...(input as { title: string; symbol: string }), user_id: user!.id });
+        .insert({ ...input, user_id: user!.id });
       if (error) throw error;
     },
     onSuccess: invalidate,
   });
 
   const update = useMutation({
-    mutationFn: async ({ id, patch }: { id: string; patch: Record<string, unknown> }) => {
+    mutationFn: async ({ id, patch }: { id: string; patch: TablesUpdate<"alerts"> }) => {
       const { error } = await supabase.from("alerts").update(patch).eq("id", id);
       if (error) throw error;
     },
