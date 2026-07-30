@@ -86,12 +86,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "author", content: "TradeMind AI" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { property: "og:title", content: "TradeMind AI — Trade Smarter with AI" },
-      { name: "twitter:title", content: "TradeMind AI — Trade Smarter with AI" },
-      { property: "og:description", content: "AI-powered crypto futures analysis that explains every opportunity with reasoning, probability, confidence and risk." },
-      { name: "twitter:description", content: "AI-powered crypto futures analysis that explains every opportunity with reasoning, probability, confidence and risk." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e4e0b1cc-0f51-4347-8848-3b1597bb7a3f/id-preview-ec893854--630c7486-cdb0-499e-b68b-81716a978521.lovable.app-1785372358474.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e4e0b1cc-0f51-4347-8848-3b1597bb7a3f/id-preview-ec893854--630c7486-cdb0-499e-b68b-81716a978521.lovable.app-1785372358474.png" },
     ],
     links: [
       {
