@@ -111,7 +111,7 @@ function WatchlistPage() {
                       variant="ghost"
                       aria-label={w.is_favorite ? "Unfavourite" : "Favourite"}
                       onClick={() =>
-                        toggleFavorite.mutate({ id: w.id, is_favorite: !w.is_favorite })
+                        toggleFavorite.mutate({ id: w.id, value: !w.is_favorite })
                       }
                     >
                       <Star

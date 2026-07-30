@@ -51,7 +51,6 @@ const empty = {
   side: "long",
   entry_price: "",
   exit_price: "",
-  quantity: "",
   leverage: "1",
   pnl: "",
   notes: "",
@@ -67,7 +66,6 @@ function TradeDialog({ entry, trigger }: { entry?: JournalEntry; trigger: React.
           side: entry.side,
           entry_price: String(entry.entry_price ?? ""),
           exit_price: String(entry.exit_price ?? ""),
-          quantity: String(entry.quantity ?? ""),
           leverage: String(entry.leverage ?? 1),
           pnl: String(entry.pnl ?? ""),
           notes: entry.notes ?? "",
@@ -86,7 +84,6 @@ function TradeDialog({ entry, trigger }: { entry?: JournalEntry; trigger: React.
       side: form.side,
       entry_price: entryPrice,
       exit_price: form.exit_price ? Number(form.exit_price) : null,
-      quantity: form.quantity ? Number(form.quantity) : null,
       leverage: Number(form.leverage) || 1,
       pnl: form.pnl ? Number(form.pnl) : null,
       notes: form.notes.trim().slice(0, 1000) || null,
@@ -137,7 +134,6 @@ function TradeDialog({ entry, trigger }: { entry?: JournalEntry; trigger: React.
             [
               ["entry_price", "Entry price"],
               ["exit_price", "Exit price"],
-              ["quantity", "Quantity"],
               ["leverage", "Leverage"],
               ["pnl", "Realised P&L"],
             ] as const
