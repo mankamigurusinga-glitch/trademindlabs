@@ -1,26 +1,25 @@
 /**
- * Central n8n backend client (server-only).
+ * Central n8n webhook client (server-only).
  *
- * All outbound calls to the n8n AI backend go through `n8nRequest`. The base
- * URL, auth token and every endpoint path come from environment variables so
- * nothing is hardcoded and the backend can be re-pointed without a code change.
+ * Every outbound call goes through `n8nRequest`, which POSTs JSON to
+ * `${N8N_BASE_URL}/webhook/<endpoint>`. No API key and no REST API is used —
+ * n8n Cloud webhooks are public per-workflow URLs.
  *
  * Env vars (read at call time, never at module scope):
- *   N8N_BASE_URL         e.g. https://my.app.n8n.cloud/webhook
- *   N8N_API_KEY          token sent as the auth header
- *   N8N_AUTH_HEADER      optional, defaults to "x-api-key"
- *   N8N_TIMEOUT_MS       optional, defaults to 15000
- *   N8N_ANALYSIS_PATH    optional, defaults to "/trademind/analysis"
- *   N8N_ALERTS_PATH      optional, defaults to "/trademind/alerts"
- *   N8N_WATCHLIST_PATH   optional, defaults to "/trademind/watchlist"
- *   N8N_JOURNAL_PATH     optional, defaults to "/trademind/journal"
+ *   N8N_BASE_URL        e.g. https://my.app.n8n.cloud   (required)
+ *   N8N_TIMEOUT_MS      optional, defaults to 15000
+ *   N8N_RETRIES         optional, defaults to 2 retries on network/5xx
+ *   N8N_ANALYSIS_PATH   optional webhook slug, defaults to "trademind-analysis"
+ *   N8N_ALERTS_PATH     optional webhook slug, defaults to "trademind-alerts"
+ *   N8N_WATCHLIST_PATH  optional webhook slug, defaults to "trademind-watchlist"
+ *   N8N_JOURNAL_PATH    optional webhook slug, defaults to "trademind-journal"
  */
 
 export const N8N_ENDPOINTS = {
-  analysis: { env: "N8N_ANALYSIS_PATH", fallback: "/trademind/analysis" },
-  alerts: { env: "N8N_ALERTS_PATH", fallback: "/trademind/alerts" },
-  watchlist: { env: "N8N_WATCHLIST_PATH", fallback: "/trademind/watchlist" },
-  journal: { env: "N8N_JOURNAL_PATH", fallback: "/trademind/journal" },
+  analysis: { env: "N8N_ANALYSIS_PATH", fallback: "trademind-analysis" },
+  alerts: { env: "N8N_ALERTS_PATH", fallback: "trademind-alerts" },
+  watchlist: { env: "N8N_WATCHLIST_PATH", fallback: "trademind-watchlist" },
+  journal: { env: "N8N_JOURNAL_PATH", fallback: "trademind-journal" },
 } as const;
 
 export type N8nEndpoint = keyof typeof N8N_ENDPOINTS;
@@ -40,72 +39,73 @@ export function isN8nConfigured(): boolean {
   return !!process.env["N8N_BASE_URL"];
 }
 
-function endpointUrl(endpoint: N8nEndpoint, query?: Record<string, string | number | undefined>) {
+/** Builds `${N8N_BASE_URL}/webhook/<slug>`, tolerating trailing slashes. */
+export function webhookUrl(endpoint: N8nEndpoint): string {
   const base = process.env["N8N_BASE_URL"];
   if (!base) throw new N8nError("Backend URL is not configured");
   const { env, fallback } = N8N_ENDPOINTS[endpoint];
-  const path = process.env[env] ?? fallback;
-  const url = new URL(
-    path.startsWith("/") ? path : `/${path}`,
-    base.endsWith("/") ? base : `${base}/`,
-  );
-  // Preserve any path prefix in the base URL (e.g. ".../webhook").
-  const basePath = new URL(base.endsWith("/") ? base : `${base}/`).pathname.replace(/\/$/, "");
-  if (basePath && !url.pathname.startsWith(basePath)) url.pathname = basePath + url.pathname;
-  for (const [k, v] of Object.entries(query ?? {})) {
-    if (v !== undefined && v !== "") url.searchParams.set(k, String(v));
-  }
-  return url.toString();
+  const slug = (process.env[env] || fallback).replace(/^\/+|\/+$/g, "");
+  const root = base.replace(/\/+$/, "").replace(/\/webhook$/i, "");
+  return `${root}/webhook/${slug}`;
 }
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** POSTs a JSON payload to an n8n webhook and returns the parsed JSON body. */
 export async function n8nRequest<T>(
   endpoint: N8nEndpoint,
-  init: {
-    method?: "GET" | "POST" | "PATCH" | "DELETE";
-    query?: Record<string, string | number | undefined>;
-    body?: unknown;
-  } = {},
+  init: { body?: unknown } = {},
 ): Promise<T> {
-  const url = endpointUrl(endpoint, init.query);
-  const key = process.env["N8N_API_KEY"];
-  const headerName = process.env["N8N_AUTH_HEADER"] || "x-api-key";
+  const url = webhookUrl(endpoint);
   const timeout = Number(process.env["N8N_TIMEOUT_MS"] ?? 15000);
+  const retries = Number(process.env["N8N_RETRIES"] ?? 2);
 
-  const headers: Record<string, string> = { accept: "application/json" };
-  if (key) headers[headerName] = key;
-  if (init.body !== undefined) headers["content-type"] = "application/json";
+  let lastError: N8nError = new N8nError("Could not reach the AI backend.");
 
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeout);
-  try {
-    const res = await fetch(url, {
-      method: init.method ?? (init.body !== undefined ? "POST" : "GET"),
-      headers,
-      body: init.body !== undefined ? JSON.stringify(init.body) : undefined,
-      signal: controller.signal,
-    });
-    const text = await res.text();
-    if (!res.ok) {
-      // Log provider detail server-side only.
-      console.error(`[n8n] ${endpoint} ${res.status}: ${text.slice(0, 500)}`);
-      throw new N8nError(
-        res.status === 404
-          ? "The AI backend workflow was not found."
-          : "The AI backend returned an error.",
-        res.status,
-      );
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeout);
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { accept: "application/json", "content-type": "application/json" },
+        body: JSON.stringify(init.body ?? {}),
+        signal: controller.signal,
+      });
+      const text = await res.text();
+      if (!res.ok) {
+        // Log provider detail server-side only.
+        console.error(`[n8n] ${endpoint} ${res.status}: ${text.slice(0, 500)}`);
+        const retryable = res.status >= 500 || res.status === 429;
+        lastError = new N8nError(
+          res.status === 404
+            ? "The AI backend workflow was not found."
+            : "The AI backend returned an error.",
+          res.status,
+        );
+        if (retryable && attempt < retries) {
+          await sleep(300 * 2 ** attempt);
+          continue;
+        }
+        throw lastError;
+      }
+      return (text ? JSON.parse(text) : null) as T;
+    } catch (error) {
+      if (error instanceof N8nError) throw error;
+      if (error instanceof Error && error.name === "AbortError") {
+        lastError = new N8nError("The AI backend timed out.");
+      } else {
+        console.error(`[n8n] ${endpoint} request failed`, error);
+        lastError = new N8nError("Could not reach the AI backend.");
+      }
+      if (attempt >= retries) throw lastError;
+      await sleep(300 * 2 ** attempt);
+    } finally {
+      clearTimeout(timer);
     }
-    return (text ? JSON.parse(text) : null) as T;
-  } catch (error) {
-    if (error instanceof N8nError) throw error;
-    if (error instanceof Error && error.name === "AbortError") {
-      throw new N8nError("The AI backend timed out.");
-    }
-    console.error(`[n8n] ${endpoint} request failed`, error);
-    throw new N8nError("Could not reach the AI backend.");
-  } finally {
-    clearTimeout(timer);
   }
+
+  throw lastError;
 }
 
 /* ------------------------------ normalisation ----------------------------- */
