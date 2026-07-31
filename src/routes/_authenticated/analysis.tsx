@@ -48,10 +48,12 @@ function AnalysisPage() {
   const [exchange, setExchange] = React.useState<Exchange>("Binance");
   const [nonce, setNonce] = React.useState(0);
 
-  const { data, isFetching } = useQuery({
+  const { data, isFetching, isError, error, refetch } = useQuery({
     queryKey: ["analysis", symbol, exchange, nonce],
     queryFn: () => aiService.analyze(symbol, exchange, nonce),
+    retry: 1,
   });
+
 
   return (
     <AppShell title="AI Analysis" subtitle="Reasoning, probability and risk for every setup">
