@@ -1,8 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { getAlertsFeed } from "@/lib/trademind-api.functions";
 import type { TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
-import type { JournalEntryInsert, JournalEntryUpdate } from "@/types";
+import type { Alert, JournalEntryInsert, JournalEntryUpdate } from "@/types";
 
 /* --------------------------------- profile -------------------------------- */
 
@@ -134,15 +136,15 @@ export function useAlerts() {
     queryKey: ["alerts", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("alerts")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data ?? [];
+      const { alerts, backendError } = await getAlertsFeed({ data: {} });
+      if (backendError) {
+        toast.error(backendError, { id: "alerts-backend" });
+      }
+      return alerts as Alert[];
     },
   });
 }
+
 
 export function useAlertMutations() {
   const { user } = useAuth();

@@ -11,7 +11,7 @@ import {
 import { Activity, Gauge, RefreshCw, Sparkles, TrendingUp } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell } from "@/components/app/AppShell";
-import { Metric, Panel } from "@/components/app/common";
+import { ErrorState, Metric, Panel } from "@/components/app/common";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -48,10 +48,12 @@ function AnalysisPage() {
   const [exchange, setExchange] = React.useState<Exchange>("Binance");
   const [nonce, setNonce] = React.useState(0);
 
-  const { data, isFetching } = useQuery({
+  const { data, isFetching, isError, error, refetch } = useQuery({
     queryKey: ["analysis", symbol, exchange, nonce],
     queryFn: () => aiService.analyze(symbol, exchange, nonce),
+    retry: 1,
   });
+
 
   return (
     <AppShell title="AI Analysis" subtitle="Reasoning, probability and risk for every setup">
@@ -95,12 +97,27 @@ function AnalysisPage() {
         </div>
       </Panel>
 
-      {!data ? (
+      {isError ? (
+        <Panel>
+          <ErrorState
+            message={
+              error instanceof Error ? error.message : "Could not load the AI analysis."
+            }
+          />
+          <div className="mt-4 flex justify-center">
+            <Button variant="outline" onClick={() => refetch()} disabled={isFetching}>
+              <RefreshCw className={`mr-2 h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+              Try again
+            </Button>
+          </div>
+        </Panel>
+      ) : !data ? (
         <div className="space-y-5">
           <Skeleton className="h-40 w-full rounded-3xl" />
           <Skeleton className="h-64 w-full rounded-3xl" />
         </div>
       ) : (
+
         <>
           <Panel title={`${data.symbol} · ${data.exchange}`} icon={Activity}>
             <div className="flex flex-wrap items-end gap-4">

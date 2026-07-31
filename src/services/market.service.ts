@@ -1,13 +1,11 @@
 /**
  * Market data service.
  *
- * Currently backed by deterministic mock data. Each exchange adapter below is a
- * placeholder with the exact signature a live REST integration will use, so the
- * UI never changes when the real endpoints are wired up.
+ * Ticker/price data still uses deterministic sample data — the exchange
+ * adapters below are placeholders with the exact signature a live REST
+ * integration will use. AI analysis now comes from the n8n backend
+ * (see services/ai.service.ts).
  */
-import { buildAnalysis } from "./analysis.mock";
-import type { AnalysisResult, Exchange } from "@/types";
-
 export interface Ticker {
   symbol: string;
   price: number;
@@ -40,13 +38,4 @@ export async function fetchTickers(): Promise<Ticker[]> {
 export async function fetchTicker(symbol: string): Promise<Ticker | undefined> {
   const all = await fetchTickers();
   return all.find((t) => t.symbol === symbol);
-}
-
-export async function fetchAnalysis(
-  symbol: string,
-  exchange: Exchange,
-  nonce = 0,
-): Promise<AnalysisResult> {
-  await wait(500);
-  return buildAnalysis(symbol, exchange, nonce);
 }
