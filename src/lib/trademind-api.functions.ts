@@ -31,7 +31,6 @@ export const getAiAnalysis = createServerFn({ method: "POST" })
       throw new Error("The AI backend is not configured yet.");
     }
     const payload = await n8nRequest<unknown>("analysis", {
-      method: "POST",
       body: {
         symbol: data.symbol,
         exchange: data.exchange,
@@ -64,7 +63,6 @@ export const getAlertsFeed = createServerFn({ method: "POST" })
 
     try {
       const payload = await n8nRequest<unknown>("alerts", {
-        method: "POST",
         body: {
           userId,
           symbol: data.symbol,
@@ -100,7 +98,6 @@ export const syncWatchlistToBackend = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<{ ok: boolean; skipped?: boolean }> => {
     if (!isN8nConfigured()) return { ok: true, skipped: true };
     await n8nRequest<unknown>("watchlist", {
-      method: "POST",
       body: { ...data, userId: context.userId },
     });
     return { ok: true };
@@ -120,7 +117,6 @@ export const syncJournalToBackend = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<{ ok: boolean; skipped?: boolean }> => {
     if (!isN8nConfigured()) return { ok: true, skipped: true };
     await n8nRequest<unknown>("journal", {
-      method: "POST",
       body: { ...data, userId: context.userId },
     });
     return { ok: true };
