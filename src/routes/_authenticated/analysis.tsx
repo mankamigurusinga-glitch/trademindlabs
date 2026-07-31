@@ -11,7 +11,7 @@ import {
 import { Activity, Gauge, RefreshCw, Sparkles, TrendingUp } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell } from "@/components/app/AppShell";
-import { Metric, Panel } from "@/components/app/common";
+import { ErrorState, Metric, Panel } from "@/components/app/common";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
