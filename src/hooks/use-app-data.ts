@@ -1,8 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { getAlertsFeed } from "@/lib/trademind-api.functions";
 import type { TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
-import type { JournalEntryInsert, JournalEntryUpdate } from "@/types";
+import type { Alert, JournalEntryInsert, JournalEntryUpdate } from "@/types";
 
 /* --------------------------------- profile -------------------------------- */
 
