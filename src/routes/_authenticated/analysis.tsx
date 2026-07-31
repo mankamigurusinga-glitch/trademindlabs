@@ -97,12 +97,27 @@ function AnalysisPage() {
         </div>
       </Panel>
 
-      {!data ? (
+      {isError ? (
+        <Panel>
+          <ErrorState
+            message={
+              error instanceof Error ? error.message : "Could not load the AI analysis."
+            }
+          />
+          <div className="mt-4 flex justify-center">
+            <Button variant="outline" onClick={() => refetch()} disabled={isFetching}>
+              <RefreshCw className={`mr-2 h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+              Try again
+            </Button>
+          </div>
+        </Panel>
+      ) : !data ? (
         <div className="space-y-5">
           <Skeleton className="h-40 w-full rounded-3xl" />
           <Skeleton className="h-64 w-full rounded-3xl" />
         </div>
       ) : (
+
         <>
           <Panel title={`${data.symbol} · ${data.exchange}`} icon={Activity}>
             <div className="flex flex-wrap items-end gap-4">
