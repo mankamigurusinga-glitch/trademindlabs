@@ -134,15 +134,15 @@ export function useAlerts() {
     queryKey: ["alerts", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("alerts")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data ?? [];
+      const { alerts, backendError } = await getAlertsFeed({ data: {} });
+      if (backendError) {
+        toast.error(backendError, { id: "alerts-backend" });
+      }
+      return alerts;
     },
   });
 }
+
 
 export function useAlertMutations() {
   const { user } = useAuth();
