@@ -140,7 +140,7 @@ export function useAlerts() {
       if (backendError) {
         toast.error(backendError, { id: "alerts-backend" });
       }
-      return alerts;
+      return alerts as Alert[];
     },
   });
 }
