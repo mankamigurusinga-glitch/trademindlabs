@@ -30,7 +30,7 @@ export const getAiAnalysis = createServerFn({ method: "POST" })
     if (!isN8nConfigured()) {
       throw new Error("The AI backend is not configured yet.");
     }
-    const payload = await n8nRequest<unknown>("analysis", {
+    const payload = await n8nRequest<unknown>("analyze", {
       body: {
         symbol: data.symbol,
         exchange: data.exchange,
