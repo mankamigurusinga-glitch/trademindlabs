@@ -53,3 +53,30 @@ export interface AnalysisResult {
   series: { t: string; price: number }[];
   updatedAt: string;
 }
+
+export interface Subscription {
+  plan: string;
+  status: string;
+  renewsAt: string | null;
+  analysesUsed: number;
+  analysesLimit: number;
+  features: string[];
+}
+
+export interface AnalysisHistoryItem {
+  id: string;
+  symbol: string;
+  exchange: string;
+  trend: string;
+  score: number;
+  riskLevel: RiskLevel;
+  createdAt: string;
+  summary: string;
+}
+
+export interface ChatMessage {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  createdAt: string;
+}

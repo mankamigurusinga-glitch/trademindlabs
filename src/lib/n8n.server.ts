@@ -6,23 +6,28 @@
  * n8n Cloud webhooks are public per-workflow URLs.
  *
  * Env vars (read at call time, never at module scope):
- *   N8N_BASE_URL        e.g. https://my.app.n8n.cloud   (required)
- *   N8N_TIMEOUT_MS      optional, defaults to 15000
- *   N8N_RETRIES         optional, defaults to 2 retries on network/5xx
- *   N8N_ANALYSIS_PATH   optional webhook slug, defaults to "trademind-analysis"
- *   N8N_ALERTS_PATH     optional webhook slug, defaults to "trademind-alerts"
- *   N8N_WATCHLIST_PATH  optional webhook slug, defaults to "trademind-watchlist"
- *   N8N_JOURNAL_PATH    optional webhook slug, defaults to "trademind-journal"
+ *   N8N_BASE_URL      e.g. https://my.app.n8n.cloud   (required)
+ *   N8N_TIMEOUT_MS    optional, defaults to 20000
+ *   N8N_RETRIES       optional, defaults to 2 retries on network/5xx
+ *   N8N_<NAME>_PATH   optional slug override per endpoint, e.g. N8N_CHAT_PATH
  */
 
-export const N8N_ENDPOINTS = {
-  analysis: { env: "N8N_ANALYSIS_PATH", fallback: "trademind-analysis" },
-  alerts: { env: "N8N_ALERTS_PATH", fallback: "trademind-alerts" },
-  watchlist: { env: "N8N_WATCHLIST_PATH", fallback: "trademind-watchlist" },
-  journal: { env: "N8N_JOURNAL_PATH", fallback: "trademind-journal" },
-} as const;
+/** Webhook slugs exposed by the n8n workflow. */
+export const N8N_ENDPOINTS = [
+  "login",
+  "register",
+  "chat",
+  "analyze",
+  "profile",
+  "subscription",
+  "history",
+  "alerts",
+  "settings",
+  "watchlist",
+  "journal",
+] as const;
 
-export type N8nEndpoint = keyof typeof N8N_ENDPOINTS;
+export type N8nEndpoint = (typeof N8N_ENDPOINTS)[number];
 
 export class N8nError extends Error {
   constructor(
@@ -43,11 +48,43 @@ export function isN8nConfigured(): boolean {
 export function webhookUrl(endpoint: N8nEndpoint): string {
   const base = process.env["N8N_BASE_URL"];
   if (!base) throw new N8nError("Backend URL is not configured");
-  const { env, fallback } = N8N_ENDPOINTS[endpoint];
-  const slug = (process.env[env] || fallback).replace(/^\/+|\/+$/g, "");
+  const override = process.env[`N8N_${endpoint.toUpperCase()}_PATH`];
+  const slug = (override || endpoint).replace(/^\/+|\/+$/g, "");
   const root = base.replace(/\/+$/, "").replace(/\/webhook$/i, "");
   return `${root}/webhook/${slug}`;
 }
+
+/** Opens a raw POST to a webhook — used for streaming chat responses. */
+export async function n8nStream(
+  endpoint: N8nEndpoint,
+  body: unknown,
+): Promise<Response> {
+  const controller = new AbortController();
+  const timeout = Number(process.env["N8N_TIMEOUT_MS"] ?? 20000);
+  const timer = setTimeout(() => controller.abort(), timeout * 3);
+  try {
+    const res = await fetch(webhookUrl(endpoint), {
+      method: "POST",
+      headers: { accept: "text/event-stream, application/json", "content-type": "application/json" },
+      body: JSON.stringify(body ?? {}),
+      signal: controller.signal,
+    });
+    if (!res.ok) {
+      console.error(`[n8n] ${endpoint} ${res.status}`);
+      throw new N8nError("The AI backend returned an error.", res.status);
+    }
+    return res;
+  } catch (error) {
+    if (error instanceof N8nError) throw error;
+    if (error instanceof Error && error.name === "AbortError") {
+      throw new N8nError("The AI backend timed out.");
+    }
+    throw new N8nError("Could not reach the AI backend.");
+  } finally {
+    setTimeout(() => clearTimeout(timer), 0);
+  }
+}
+
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
