@@ -2,7 +2,14 @@
  * Maps loose n8n workflow payloads onto the app's stable domain shapes.
  * Server-only so response handling never ships to the browser.
  */
-import type { AnalysisResult, Alert, Exchange, RiskLevel } from "@/types";
+import type {
+  Alert,
+  AnalysisHistoryItem,
+  AnalysisResult,
+  Exchange,
+  RiskLevel,
+  Subscription,
+} from "@/types";
 import { asArray, unwrap } from "./n8n.server";
 
 type Row = Record<string, unknown>;
@@ -97,4 +104,52 @@ export function toAlerts(payload: unknown, userId: string): Alert[] {
       updated_at: new Date().toISOString(),
     } satisfies Alert;
   });
+}
+
+/** Maps the `/webhook/subscription` payload onto the account plan shape. */
+export function toSubscription(payload: unknown): Subscription {
+  const row = (unwrap(payload) ?? {}) as Row;
+  const featuresRaw = pick(row, ["features", "benefits", "included"]);
+  const features = Array.isArray(featuresRaw)
+    ? featuresRaw.map((f) => str(f, "")).filter(Boolean)
+    : [];
+  const renews = str(pick(row, ["renewsat", "renewal", "currentperiodend", "expiresat"]), "");
+  return {
+    plan: str(pick(row, ["plan", "tier", "planname"]), "Free"),
+    status: str(pick(row, ["status", "state"]), "active").toLowerCase(),
+    renewsAt: renews && !Number.isNaN(Date.parse(renews)) ? renews : null,
+    analysesUsed: num(pick(row, ["analysesused", "used", "usage"])),
+    analysesLimit: num(pick(row, ["analyseslimit", "limit", "quota"]), 0),
+    features,
+  };
+}
+
+/** Maps the `/webhook/history` payload onto the analysis history list. */
+export function toHistory(payload: unknown): AnalysisHistoryItem[] {
+  return asArray(payload).map((row, i) => {
+    const created = str(pick(row, ["createdat", "timestamp", "time", "date"]), "");
+    const risk = str(pick(row, ["risklevel", "risk"]), "Medium").toLowerCase();
+    return {
+      id: str(pick(row, ["id", "analysisid", "uuid"]), `h-${i}`),
+      symbol: str(pick(row, ["symbol", "pair", "ticker"]), "BTC"),
+      exchange: str(pick(row, ["exchange"]), "Binance"),
+      trend: str(pick(row, ["trend"])),
+      score: pct(num(pick(row, ["score", "trademindscore", "aiscore"]))),
+      riskLevel: (risk.startsWith("h") ? "High" : risk.startsWith("l") ? "Low" : "Medium") as RiskLevel,
+      createdAt:
+        created && !Number.isNaN(Date.parse(created)) ? created : new Date().toISOString(),
+      summary: str(pick(row, ["summary", "aisummary", "reasoning"]), ""),
+    } satisfies AnalysisHistoryItem;
+  });
+}
+
+/** Extracts assistant text from a `/webhook/chat` JSON response. */
+export function toChatText(payload: unknown): string {
+  const value = unwrap(payload);
+  if (typeof value === "string") return value;
+  const row = (value ?? {}) as Row;
+  const text = pick(row, ["reply", "response", "message", "text", "answer", "content", "output"]);
+  return typeof text === "string" && text.trim()
+    ? text
+    : "The AI backend returned an empty response.";
 }
