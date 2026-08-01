@@ -6,7 +6,10 @@ import {
   Bell,
   BookOpen,
   Briefcase,
+  CreditCard,
   LayoutDashboard,
+  MessageSquare,
+
   LogOut,
   Menu,
   Search,
