@@ -31,13 +31,17 @@ import {
 
 export const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, to: "/dashboard" },
+  { label: "Atlas AI", icon: MessageSquare, to: "/chat" },
   { label: "AI Analysis", icon: Sparkles, to: "/analysis" },
   { label: "Alerts", icon: Bell, to: "/alerts" },
   { label: "Journal", icon: BookOpen, to: "/journal" },
   { label: "Watchlist", icon: Star, to: "/watchlist" },
   { label: "Portfolio", icon: Briefcase, to: "/journal" },
+  { label: "Subscription", icon: CreditCard, to: "/subscription" },
+  { label: "Profile", icon: UserIcon, to: "/profile" },
   { label: "Settings", icon: Settings, to: "/settings" },
 ] as const;
+
 
 function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
