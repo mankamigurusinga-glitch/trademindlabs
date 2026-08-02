@@ -29,6 +29,7 @@ export interface ActionProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof actionVariants> {
   asChild?: boolean;
+  href?: string;
 }
 
 export function Action({
@@ -36,12 +37,18 @@ export function Action({
   variant,
   size,
   asChild,
+  href,
   children,
   ...props
 }: ActionProps) {
-  const Comp = asChild ? Slot : "button";
+  const Comp: React.ElementType = asChild ? Slot : href ? "a" : "button";
+  const linkProps = href ? { href } : {};
   return (
-    <Comp className={cn(actionVariants({ variant, size }), className)} {...props}>
+    <Comp
+      className={cn(actionVariants({ variant, size }), className)}
+      {...linkProps}
+      {...(props as Record<string, unknown>)}
+    >
       <>
         {/* Sweeping light pass on hover */}
         <span

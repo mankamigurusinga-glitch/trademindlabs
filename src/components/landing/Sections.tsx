@@ -171,7 +171,7 @@ export function LiveDemo() {
               </p>
             </div>
 
-            <Action className="mt-8 w-full" size="lg">
+            <Action className="mt-8 w-full" size="lg" href="/auth">
               View Full Analysis
               <ArrowRight className="h-4 w-4 transition-transform duration-500 group-hover/action:translate-x-1" />
             </Action>

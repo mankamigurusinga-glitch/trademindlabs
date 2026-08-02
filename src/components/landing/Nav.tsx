@@ -53,10 +53,10 @@ export function Nav() {
         </div>
 
         <div className="ml-auto flex items-center gap-2">
-          <Action variant="quiet" size="sm" className="hidden sm:inline-flex">
+          <Action variant="quiet" size="sm" href="/auth" className="hidden sm:inline-flex">
             Log In
           </Action>
-          <Action size="sm" className="hidden sm:inline-flex">
+          <Action size="sm" href="/auth" className="hidden sm:inline-flex">
             Start Free
           </Action>
           <button
@@ -84,10 +84,10 @@ export function Nav() {
             ))}
           </div>
           <div className="mt-4 flex gap-2 sm:hidden">
-            <Action variant="ghostline" size="sm" className="flex-1">
+            <Action variant="ghostline" size="sm" href="/auth" onClick={() => setOpen(false)} className="flex-1">
               Log In
             </Action>
-            <Action size="sm" className="flex-1">
+            <Action size="sm" href="/auth" onClick={() => setOpen(false)} className="flex-1">
               Start Free
             </Action>
           </div>

@@ -36,10 +36,10 @@ export function Hero() {
             AI analysis.
           </p>
           <div className="mt-11 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Action size="lg" className="w-full sm:w-auto">
+            <Action size="lg" href="/auth" className="w-full sm:w-auto">
               Start Free
             </Action>
-            <Action variant="ghostline" size="lg" className="w-full sm:w-auto">
+            <Action variant="ghostline" size="lg" href="#how-it-works" className="w-full sm:w-auto">
               <Play className="h-4 w-4" />
               Watch Demo
             </Action>
