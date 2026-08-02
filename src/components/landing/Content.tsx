@@ -119,6 +119,7 @@ export function Pricing() {
               <Action
                 variant={p.featured ? "primary" : "ghostline"}
                 size="lg"
+                href="/auth"
                 className="mt-10 w-full"
               >
                 {p.cta}
@@ -128,7 +129,7 @@ export function Pricing() {
         ))}
       </div>
       <Reveal delay={200} className="mt-12 text-center">
-        <Action variant="quiet" size="md">
+        <Action variant="quiet" size="md" href="#pricing">
           See Full Pricing →
         </Action>
       </Reveal>
@@ -200,10 +201,10 @@ export function FinalCTA() {
             Join traders who want to understand the market before taking a position.
           </p>
           <div className="mt-11 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Action size="lg" className="w-full sm:w-auto">
+            <Action size="lg" href="/auth" className="w-full sm:w-auto">
               Start Free
             </Action>
-            <Action variant="ghostline" size="lg" className="w-full sm:w-auto">
+            <Action variant="ghostline" size="lg" href="#how-it-works" className="w-full sm:w-auto">
               Watch Demo
             </Action>
           </div>
